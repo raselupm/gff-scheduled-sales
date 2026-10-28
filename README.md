@@ -9,12 +9,6 @@ Built by [Get Found First](https://getfoundfirst.com/).
 ![PHP 7.4+](https://img.shields.io/badge/PHP-7.4%2B-777bb4)
 ![License GPLv2](https://img.shields.io/badge/license-GPLv2-489aa5)
 
-## Intro video
-
-[![Watch the intro video](docs/video-poster.jpg)](docs/gff-scheduled-sales-intro.mp4)
-
-*48 seconds: create a rule, schedule it, watch prices update live, then turn it off. Click the image to open the video.*
-
 ## Contents
 
 - [Features](#features)
@@ -103,7 +97,7 @@ You can also install it with WP-CLI:
 wp plugin install gff-scheduled-sales.zip --activate
 ```
 
-The `docs/` and `screenshots/` folders are only for this README. You don't need them on a live site.
+The `screenshots/` folder is only for this README. You don't need them on a live site.
 
 ## How to use it
 
@@ -272,8 +266,7 @@ gff-scheduled-sales/
 ├── assets/
 │   ├── admin.css                    Admin styles
 │   └── admin.js                     Form validation, preview, progress runner, deactivate dialog
-├── screenshots/                     README screenshots
-└── docs/                            Intro video and poster
+└── screenshots/                     README screenshots
 ```
 
 ### AJAX endpoints
@@ -328,8 +321,6 @@ That's WP-Cron waiting for a site visit. Set up a real server cron (see [Backgro
 ## License
 
 GPLv2 or later. See [gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html).
-
-The intro video's background music is an original track made for this project.
 
 ---
 
