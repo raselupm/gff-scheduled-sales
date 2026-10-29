@@ -17,7 +17,7 @@ class GFF_SS_Admin {
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( GFF_SS_FILE ), array( __CLASS__, 'action_links' ) );
 
-		foreach ( array( 'preview', 'create', 'batch', 'deactivate' ) as $action ) {
+		foreach ( array( 'preview', 'create', 'batch', 'deactivate', 'delete' ) as $action ) {
 			add_action( 'wp_ajax_gff_ss_' . $action, array( __CLASS__, 'ajax_' . $action ) );
 		}
 	}
@@ -159,6 +159,16 @@ class GFF_SS_Admin {
 		wp_send_json_success( $res );
 	}
 
+	public static function ajax_delete() {
+		self::guard();
+		$id  = isset( $_POST['rule_id'] ) ? absint( $_POST['rule_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$res = GFF_SS_Engine::delete_rule( $id );
+		if ( is_wp_error( $res ) ) {
+			wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+		}
+		wp_send_json_success();
+	}
+
 	/* ---------------------------------------------------------------------
 	 * Pages
 	 * ------------------------------------------------------------------- */
@@ -240,6 +250,13 @@ class GFF_SS_Admin {
 				esc_attr( $rule->title ),
 				esc_attr( $rule->queue_op ),
 				esc_html__( 'Show progress', 'gff-scheduled-sales' )
+			);
+		} elseif ( GFF_SS_Engine::is_deletable( $rule ) ) {
+			$out .= sprintf(
+				'<button type="button" class="button gff-ss-delete" data-id="%d" data-title="%s">%s</button>',
+				$rule->id,
+				esc_attr( $rule->title ),
+				esc_html__( 'Delete', 'gff-scheduled-sales' )
 			);
 		}
 		return $out;
@@ -601,7 +618,7 @@ class GFF_SS_Admin {
 		<div class="gff-ss-modal" id="gff-ss-confirm" hidden>
 			<div class="gff-ss-modal__box gff-ss-modal__box--sm">
 				<div class="gff-ss-warn-icon">!</div>
-				<h2><?php esc_html_e( 'Deactivate this sale?', 'gff-scheduled-sales' ); ?></h2>
+				<h2 class="gff-ss-confirm-heading"><?php esc_html_e( 'Deactivate this sale?', 'gff-scheduled-sales' ); ?></h2>
 				<p class="gff-ss-confirm-title"></p>
 				<ul class="gff-ss-confirm-list"></ul>
 				<div class="gff-ss-modal__foot">

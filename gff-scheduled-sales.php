@@ -3,7 +3,7 @@
  * Plugin Name:       GFF Scheduled Sales for WooCommerce
  * Plugin URI:        https://getfoundfirst.com/
  * Description:       Create immediate or scheduled sale rules (percentage or fixed discount) for selected products and categories, with live progress, background scheduling, one-click deactivation and a full activity log.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Author:            Get Found First
  * Author URI:        https://getfoundfirst.com/
  * Text Domain:       gff-scheduled-sales
@@ -20,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GFF_SS_VERSION', '1.0.3' );
+define( 'GFF_SS_VERSION', '1.0.4' );
 define( 'GFF_SS_FILE', __FILE__ );
 define( 'GFF_SS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GFF_SS_URL', plugin_dir_url( __FILE__ ) );

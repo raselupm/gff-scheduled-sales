@@ -254,18 +254,38 @@
 	 * Deactivate / resume
 	 * ---------------------------------------------------------------- */
 
-	var $confirm = $('#gff-ss-confirm'), pending = null;
+	var $confirm = $('#gff-ss-confirm'), pending = null,
+		labels = {
+			heading: $confirm.find('.gff-ss-confirm-heading').text(),
+			cancel: $confirm.find('.gff-ss-cancel').text(),
+			yes: $confirm.find('.gff-ss-confirm-yes').text()
+		};
 
-	$(document).on('click', '.gff-ss-deactivate', function () {
-		var $b = $(this);
-		pending = { id: $b.data('id'), title: $b.data('title'), status: $b.data('status') };
-		var items = pending.status === 'scheduled'
-			? ['The scheduled start and end jobs will be cancelled.', 'No product prices have been changed yet, so nothing will be modified.', 'This cannot be undone — create a new rule to schedule it again.']
-			: ['The sale price added by this rule will be removed from every product.', 'Any sale price that existed before this rule will be restored.', 'Products whose sale price was edited manually since will be left untouched.', 'This cannot be undone — the rule and its logs are kept for your records.'];
+	function openConfirm(texts, items) {
+		$confirm.find('.gff-ss-confirm-heading').text(texts.heading);
+		$confirm.find('.gff-ss-cancel').text(texts.cancel);
+		$confirm.find('.gff-ss-confirm-yes').text(texts.yes);
 		$confirm.find('.gff-ss-confirm-title').text('“' + pending.title + '”');
 		$confirm.find('.gff-ss-confirm-list').html($.map(items, function (t) { return '<li>' + esc(t) + '</li>'; }).join(''));
 		$confirm.prop('hidden', false);
 		$('body').addClass('gff-ss-lock');
+	}
+
+	$(document).on('click', '.gff-ss-deactivate', function () {
+		var $b = $(this);
+		pending = { action: 'deactivate', id: $b.data('id'), title: $b.data('title'), status: $b.data('status') };
+		openConfirm(labels, pending.status === 'scheduled'
+			? ['The scheduled start and end jobs will be cancelled.', 'No product prices have been changed yet, so nothing will be modified.', 'This cannot be undone — create a new rule to schedule it again.']
+			: ['The sale price added by this rule will be removed from every product.', 'Any sale price that existed before this rule will be restored.', 'Products whose sale price was edited manually since will be left untouched.', 'This cannot be undone — the rule and its logs are kept for your records.']);
+	});
+
+	$(document).on('click', '.gff-ss-delete', function () {
+		var $b = $(this);
+		pending = { action: 'delete', id: $b.data('id'), title: $b.data('title') };
+		openConfirm(
+			{ heading: 'Delete this rule?', cancel: 'Keep it', yes: 'Yes, delete' },
+			['The rule, its product report and its activity log will be permanently removed.', 'Product prices are not affected — this sale is no longer applied.', 'This cannot be undone.']
+		);
 	});
 
 	$confirm.on('click', '.gff-ss-cancel', function () {
@@ -278,6 +298,25 @@
 		if (!pending) return;
 		var p = pending, $btn = $(this);
 		$btn.prop('disabled', true);
+		if (p.action === 'delete') {
+			post('delete', { rule_id: p.id })
+				.done(function (res) {
+					if (!res.success) {
+						$confirm.prop('hidden', true);
+						$('body').removeClass('gff-ss-lock');
+						window.alert(res.data.message); // eslint-disable-line no-alert
+						return;
+					}
+					window.location = GFF_SS.listUrl;
+				})
+				.fail(function (xhr) {
+					$confirm.prop('hidden', true);
+					$('body').removeClass('gff-ss-lock');
+					window.alert(errMsg(xhr)); // eslint-disable-line no-alert
+				})
+				.always(function () { $btn.prop('disabled', false); pending = null; });
+			return;
+		}
 		post('deactivate', { rule_id: p.id })
 			.done(function (res) {
 				$confirm.prop('hidden', true);

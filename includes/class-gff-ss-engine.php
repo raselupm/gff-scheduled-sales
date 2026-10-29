@@ -324,6 +324,33 @@ class GFF_SS_Engine {
 		return array( 'mode' => 'revert' );
 	}
 
+	public static function is_deletable( $rule ) {
+		return in_array( $rule->status, array( 'ended', 'deactivated', 'cancelled' ), true );
+	}
+
+	/**
+	 * Permanently delete a finished rule together with its items and logs.
+	 *
+	 * @return true|WP_Error
+	 */
+	public static function delete_rule( $id ) {
+		global $wpdb;
+		$rule = self::get_rule( $id );
+		if ( ! $rule ) {
+			return new WP_Error( 'gff_ss_missing', __( 'Rule not found.', 'gff-scheduled-sales' ) );
+		}
+		if ( ! self::is_deletable( $rule ) ) {
+			return new WP_Error( 'gff_ss_state', __( 'Only ended, deactivated or cancelled rules can be deleted.', 'gff-scheduled-sales' ) );
+		}
+
+		self::unschedule( $id );
+		self::unlock( $id );
+		$wpdb->delete( self::table( 'items' ), array( 'rule_id' => $id ) );
+		$wpdb->delete( self::table( 'logs' ), array( 'rule_id' => $id ) );
+		$wpdb->delete( self::table( 'rules' ), array( 'id' => $id ) );
+		return true;
+	}
+
 	public static function unschedule( $id ) {
 		foreach ( array( 'gff_ss_start_rule', 'gff_ss_end_rule', 'gff_ss_continue' ) as $hook ) {
 			as_unschedule_all_actions( $hook, array( 'rule_id' => (int) $id ), self::GROUP );
